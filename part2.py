@@ -42,13 +42,13 @@ y_train = torch.from_numpy(y_train).float()
 y_test = torch.from_numpy(y_test).float()
 
 model.eval()
-print("accuracy before trained model:", loss(y_test, model(x_test)).item())
+print("accuracy before trained model:", loss(y_test, model(x_test).squeeze()).item())
 
 model.train()
 for epoch in range(epoch):
     mySGD.zero_grad()
     predy = model(x_train)
-    l = loss(y_train, predy)
+    l = loss(y_train, predy.squeeze())
     print("epoch ", epoch, l.item())
     l.backward()
     mySGD.step()
@@ -57,4 +57,5 @@ model.eval()
 y_pred = model(x_test)
 
 model.eval()
-print("accuracy after trained model:", loss(y_test, model(x_test)).item())
+print("accuracy after trained model:", loss(y_test, model(x_test).squeeze()).item())
+del
