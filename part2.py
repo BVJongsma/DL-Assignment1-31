@@ -1,7 +1,7 @@
 import torch.nn
-import part1
 from sklearn.model_selection import train_test_split
 import numpy as np
+import load_data
 
 # input 2, output 1 hidden 30
 
@@ -29,35 +29,44 @@ class MLP(torch.nn.Module):
         self.torch.backward()
         return self
 
-for iter in range(0,10):
+accuracies = []
+
+data, labels = load_data.load_data()
+# print(type(data))
+x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2)
+x_train = torch.from_numpy(x_train).float()
+x_test = torch.from_numpy(x_test).float()
+y_train = torch.from_numpy(y_train).float()
+y_test = torch.from_numpy(y_test).float()
+
+criterion = torch.nn.MSELoss()
+
+for iter in range(0,10): # run it 10 times
+
     model = MLP(2, 30)
-    loss = torch.nn.MSELoss()
-    mySGD = torch.optim.SGD(model.parameters(), lr=0.01)  # why does model.parameters() work?
-    data = part1.load_data()
-    # print(type(data))
-    x_train, x_test, y_train, y_test = train_test_split(data[0], data[1], test_size=0.2)
-    x_train = torch.from_numpy(x_train).float()
-    x_test = torch.from_numpy(x_test).float()
-    y_train = torch.from_numpy(y_train).float()
-    y_test = torch.from_numpy(y_test).float()
+    mySGD = torch.optim.SGD(model.parameters(), lr=load_data.learning_rate)
+    epoch = 10
 
     """"
     model evaluation mode
     """
     model.eval()
-    print("accuracy before trained model:", loss(y_test, model(x_test).squeeze()).item())
+    print(iter, "before:", criterion(y_test, model(x_test).squeeze()).item())
 
     """"
     model training mode
     """
     model.train()
-    mySGD.zero_grad()
-    predy = model(x_train)
-    l = loss(y_train, predy.squeeze())
-    print("epoch ", epoch, l.item())
-    l.backward()
-    mySGD.step()
+    for e in range(0, epoch):
+        mySGD.zero_grad() # gradient to 0
+        loss = 0
+
+        for idx, x in enumerate(x_train):
+            y_pred = model(x)
+            loss = criterion(y_train, y_pred.squeeze())
+            loss.backward()
+            mySGD.step()
 
     """"model evaluation mode"""
 
-    print("accuracy after trained model:", loss(y_test, model(x_test).squeeze()).item())
+    print(iter, "after:", criterion(y_test, model(x_test).squeeze()).item())
