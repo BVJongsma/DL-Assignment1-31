@@ -29,23 +29,28 @@ class MLP(torch.nn.Module):
         self.torch.backward()
         return self
 
+for iter in range(0,10):
+    model = MLP(2, 30)
+    loss = torch.nn.MSELoss()
+    mySGD = torch.optim.SGD(model.parameters(), lr=0.01)  # why does model.parameters() work?
+    data = part1.load_data()
+    # print(type(data))
+    x_train, x_test, y_train, y_test = train_test_split(data[0], data[1], test_size=0.2)
+    x_train = torch.from_numpy(x_train).float()
+    x_test = torch.from_numpy(x_test).float()
+    y_train = torch.from_numpy(y_train).float()
+    y_test = torch.from_numpy(y_test).float()
 
-model = MLP(2, 30)
-loss = torch.nn.MSELoss()
-mySGD = torch.optim.SGD(model.parameters(), lr=0.01)  # why does model.parameters() work?
-data = part1.load_data()
-print(type(data))
-x_train, x_test, y_train, y_test = train_test_split(data[0], data[1], test_size=0.2)
-x_train = torch.from_numpy(x_train).float()
-x_test = torch.from_numpy(x_test).float()
-y_train = torch.from_numpy(y_train).float()
-y_test = torch.from_numpy(y_test).float()
+    """"
+    model evaluation mode
+    """
+    model.eval()
+    print("accuracy before trained model:", loss(y_test, model(x_test).squeeze()).item())
 
-model.eval()
-print("accuracy before trained model:", loss(y_test, model(x_test).squeeze()).item())
-
-model.train()
-for epoch in range(epoch):
+    """"
+    model training mode
+    """
+    model.train()
     mySGD.zero_grad()
     predy = model(x_train)
     l = loss(y_train, predy.squeeze())
@@ -53,9 +58,6 @@ for epoch in range(epoch):
     l.backward()
     mySGD.step()
 
-model.eval()
-y_pred = model(x_test)
+    """"model evaluation mode"""
 
-model.eval()
-print("accuracy after trained model:", loss(y_test, model(x_test).squeeze()).item())
-del
+    print("accuracy after trained model:", loss(y_test, model(x_test).squeeze()).item())

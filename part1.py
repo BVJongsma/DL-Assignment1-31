@@ -1,7 +1,7 @@
 import sklearn.datasets
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-import numpy as np
+#import numpy as np
 import os
 
 
@@ -30,8 +30,7 @@ def backward():
     return 0
 
 
-def sigmoid(z):
-    return 1./(1.+np.exp(-z))
+# def sigmoid(z):     return 1./(1.+np.exp(-z))
 
 
 def dSigmoid(z):
