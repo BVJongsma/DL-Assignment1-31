@@ -2,6 +2,7 @@ import torch.nn
 from sklearn.model_selection import train_test_split
 import numpy as np
 import load_data
+import matplotlib.pyplot as plt
 
 # input 2, output 1 hidden 30
 
@@ -30,11 +31,14 @@ accuracies = []
 
 data, labels = load_data.load_data()
 # print(type(data))
-x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2)
+x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=1)
+x_train, x_validate, y_train, y_validate = train_test_split(data, labels, test_size=0.25, random_state=1)
 x_train = torch.from_numpy(x_train).float()
 x_test = torch.from_numpy(x_test).float()
+x_validate = torch.from_numpy(x_validate).float()
 y_train = torch.from_numpy(y_train).float()
 y_test = torch.from_numpy(y_test).float()
+y_validate = torch.from_numpy(y_validate).float()
 
 criterion = torch.nn.MSELoss()
 
@@ -56,32 +60,47 @@ for iter in range(0, 10):  # run it 10 times
 
     model = MLP(2, 30)
     mySGD = torch.optim.SGD(model.parameters(), lr=0.1)
-    epoch = 10
+    epoch = 50
 
-    """"
+    """
     model evaluation mode
     """
     model.eval()
     print("Iteration:", iter, "before:", accuracy(model(x_test), y_test))
 
-    """"
+    """
     model training mode
     """
-    model.train()
+    loss_ = 0
+    training_loss = []
+    validation_loss = []
+
     for e in range(0, epoch):
+        model.train()
+        loss_ = 0
         for x, y in zip(x_train, y_train):
             mySGD.zero_grad()  # gradient to 0
             y_pred = model(x)
             loss = criterion(y_pred.squeeze(), y)
+            loss_ += loss
             loss.backward()
             mySGD.step()
+        training_loss.append(loss_/len(y_train))
 
-    """"model evaluation mode
-    if y_hat[0] > 0.5:
-        y_hat = 1
-    else:
-        y_hat = 0
-        """
+        loss_ = 0
+        model.eval()
+        for x, y in zip(x_validate, y_validate):
+            y_pred = model(x)
+            loss_ += criterion(y_pred.squeeze(), y)
+        validation_loss.append(loss_/len(y_validate))
+
+    plt.plot(training_loss)
+    plt.plot(validation_loss)
+    plt.show()
+
+    """
+    model evaluation mode
+    """
     model.eval()
     y_pred = model(x_test).squeeze()
     print("Iteration:", iter, "after:", accuracy(y_pred, y_test))
