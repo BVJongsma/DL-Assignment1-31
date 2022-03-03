@@ -25,10 +25,6 @@ class MLP(torch.nn.Module):
         output = self.sigmoid(output)
         return output
 
-    def backward(self):
-        self.torch.backward()
-        return self
-
 
 accuracies = []
 
@@ -42,50 +38,43 @@ y_test = torch.from_numpy(y_test).float()
 
 criterion = torch.nn.MSELoss()
 
-
-# crit is the loss function
-
-
-
-def accuracy(pred, true, crit):
+def accuracy(pred, true):
     acc = 0
-    for y, idx in enumerate(pred):
-        if y >= 0.5:
-            pred[idx] = 1
+    for y_hat, y in zip(pred, true):
+        y_ = 0
+        if y_hat.item() > 0.5:
+            y_ = 1
         else:
-            pred[idx] = 0 # TODO: fix this error
-
-        if pred[idx] == y_test[idx]:
+            y_ = 0
+        if y_ == y.item():
             acc += 1
-    print(acc / len(y_test))
-    return
 
-    # return crit(true, pred)
+    return acc / len(pred)
 
 
 for iter in range(0, 10):  # run it 10 times
 
     model = MLP(2, 30)
-    mySGD = torch.optim.SGD(model.parameters(), lr=load_data.learning_rate)
+    mySGD = torch.optim.SGD(model.parameters(), lr=0.1)
     epoch = 10
 
     """"
     model evaluation mode
     """
     model.eval()
-    print(iter, "before:", accuracy(model(x_test), y_test, criterion))
+    print("Iteration:", iter, "before:", accuracy(model(x_test), y_test))
 
     """"
     model training mode
     """
     model.train()
     for e in range(0, epoch):
-        mySGD.zero_grad()  # gradient to 0
-        loss = 0
-        y_pred = model(x_train)
-        loss = criterion(y_train, y_pred.squeeze())
-        loss.backward()
-        mySGD.step()
+        for x, y in zip(x_train, y_train):
+            mySGD.zero_grad()  # gradient to 0
+            y_pred = model(x)
+            loss = criterion(y_pred.squeeze(), y)
+            loss.backward()
+            mySGD.step()
 
     """"model evaluation mode
     if y_hat[0] > 0.5:
@@ -95,6 +84,4 @@ for iter in range(0, 10):  # run it 10 times
         """
     model.eval()
     y_pred = model(x_test).squeeze()
-    print(iter, "after:", accuracy(y_pred, y_test, criterion).item())
-
-    #print(type(model(x_test).squeeze()))
+    print("Iteration:", iter, "after:", accuracy(y_pred, y_test))
