@@ -1,10 +1,7 @@
-import sklearn.datasets
-import load_data
 from sklearn.model_selection import train_test_split
+import load_data
 import matplotlib.pyplot as plt
-import numpy as np
 import mlp
-
 
 data, labels = load_data.load_data()
 
@@ -61,8 +58,9 @@ for iter in range(0, 10):
             loss += network.loss(y, y_hat[0])
 
         validation_loss.append(loss/len(X_validate))
-    plt.plot(training_loss)
-    plt.plot(validation_loss)
+    plt.plot(training_loss, label="Training Loss")
+    plt.plot(validation_loss, label="Validation Loss")
+    plt.legend()
     plt.show()
 
     """

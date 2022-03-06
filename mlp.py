@@ -2,24 +2,31 @@ import numpy as np
 import math
 import random
 
+
 def relu(x):
     return max(0.0, x)
 
+
 def sigmoid(x):
     return 1 / (1 + math.exp(-x))
+
 
 def sigmoid_derivative(x):
     x = sigmoid(x)
     return x * (1 - x)
 
+
 def derivative_relu(x):
     relu_grad = x > 0
     return relu_grad
 
+
 class MLP():
     def __init__(self, input_size, layers_size, output_size, batch_size):
-        self.weights_1 = np.random.uniform(-1/math.sqrt(input_size), 1/math.sqrt(input_size), (layers_size, input_size))
-        self.weights_2 = np.random.uniform(-1/math.sqrt(layers_size), 1/math.sqrt(layers_size), (output_size, layers_size))
+        self.weights_1 = np.random.uniform(-1 / math.sqrt(input_size), 1 / math.sqrt(input_size),
+                                           (layers_size, input_size))
+        self.weights_2 = np.random.uniform(-1 / math.sqrt(layers_size), 1 / math.sqrt(layers_size),
+                                           (output_size, layers_size))
         self.bias_1 = np.random.randn(layers_size, 1)
         self.bias_2 = np.random.randn(output_size, 1)
         self.output_size = output_size
@@ -99,11 +106,10 @@ class MLP():
 
         delta_w1 = np.array(delta_w1)
         delta_b1 = np.array([delta_b1]).T
-        return  -delta_w2, -delta_b2, -delta_w1, -delta_b1
-
+        return -delta_w2, -delta_b2, -delta_w1, -delta_b1
 
     def loss(self, y, predict):
-        return (predict - y)**2
+        return (predict - y) ** 2
 
     def derivative_loss(self, y, predict):
         return 2 * (predict - y)
