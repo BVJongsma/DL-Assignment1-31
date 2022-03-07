@@ -1,6 +1,5 @@
 import torch.nn
 from sklearn.model_selection import train_test_split
-import numpy as np
 import load_data
 import matplotlib.pyplot as plt
 
@@ -32,7 +31,7 @@ accuracies = []
 data, labels = load_data.load_data()
 # print(type(data))
 x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=1)
-x_train, x_validate, y_train, y_validate = train_test_split(data, labels, test_size=0.25, random_state=1)
+x_train, x_validate, y_train, y_validate = train_test_split(x_train, y_train, test_size=0.25, random_state=1)
 x_train = torch.from_numpy(x_train).float()
 x_test = torch.from_numpy(x_test).float()
 x_validate = torch.from_numpy(x_validate).float()
@@ -41,6 +40,7 @@ y_test = torch.from_numpy(y_test).float()
 y_validate = torch.from_numpy(y_validate).float()
 
 criterion = torch.nn.MSELoss()
+
 
 def accuracy(pred, true):
     acc = 0
@@ -85,17 +85,19 @@ for iter in range(0, 10):  # run it 10 times
             loss_ += loss
             loss.backward()
             mySGD.step()
-        training_loss.append(loss_/len(y_train))
+        training_loss.append((loss_/len(y_train)).item())
 
         loss_ = 0
         model.eval()
         for x, y in zip(x_validate, y_validate):
             y_pred = model(x)
             loss_ += criterion(y_pred.squeeze(), y)
-        validation_loss.append(loss_/len(y_validate))
+        validation_loss.append((loss_/len(y_validate)).item())
 
-    plt.plot(training_loss)
-    plt.plot(validation_loss)
+    # training_loss = np.array(training_loss)
+    plt.plot(training_loss, label="Training Loss")
+    plt.plot(validation_loss, label="Validation Loss")
+    plt.legend()
     plt.show()
 
     """
@@ -103,4 +105,8 @@ for iter in range(0, 10):  # run it 10 times
     """
     model.eval()
     y_pred = model(x_test).squeeze()
-    print("Iteration:", iter, "after:", accuracy(y_pred, y_test))
+    acc = accuracy(y_pred, y_test)
+    accuracies.append(acc)
+    print("Iteration:", iter, "after:", acc)
+
+print(accuracies)
